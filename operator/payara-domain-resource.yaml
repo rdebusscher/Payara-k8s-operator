@@ -1,0 +1,8 @@
+apiVersion: poc.payara.fish/v1alpha
+kind: Domain
+metadata:
+  name: test
+spec:
+  application-image: demo:0.5
+  instance-image: server-node-k8s:5.2021.1
+  instances: 2
