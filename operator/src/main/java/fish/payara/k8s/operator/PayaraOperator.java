@@ -2,6 +2,7 @@ package fish.payara.k8s.operator;
 
 import fish.payara.k8s.operator.resource.PayaraDomainResource;
 import fish.payara.k8s.operator.resource.PayaraDomainResourceList;
+import fish.payara.k8s.operator.util.LogHelper;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.*;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
@@ -24,8 +25,6 @@ public class PayaraOperator {
 
     // Client to access the Custom resource
     private NonNamespaceOperation<PayaraDomainResource, PayaraDomainResourceList, Resource<PayaraDomainResource>> customResourceClient;
-
-    private final String namespace;
 
     private final BlockingDeque<EventItem> transferQueue = new LinkedBlockingDeque<>();
 
@@ -54,24 +53,19 @@ public class PayaraOperator {
 
 
         // Start the Operator as Daemon thread (since using Watch)
-        new PayaraOperator(namespace,
-                client
-                        .customResources(PayaraDomainResource.class, PayaraDomainResourceList.class)
-                        .inNamespace(namespace)
-
-        ).performWork();
+        new PayaraOperator(namespace, client).performWork();
 
     }
 
     public PayaraOperator(String namespace,
-                          NonNamespaceOperation<PayaraDomainResource, PayaraDomainResourceList, Resource<PayaraDomainResource>> customResourceClient) {
-        this.customResourceClient = customResourceClient;
-        this.namespace = namespace;
-        new Thread(new ResourceEventProcessor(transferQueue)).start();
+                          KubernetesClient client) {
+        this.customResourceClient = client
+                .customResources(PayaraDomainResource.class, PayaraDomainResourceList.class)
+                .inNamespace(namespace);
+        new Thread(new ResourceEventProcessor(client, namespace, transferQueue)).start();
     }
 
     private void performWork() {
-
 
         try {
             // watch

@@ -48,17 +48,16 @@ public class PayaraDomainSpec {
         return configScript;
     }
 
-
     public Map<String, String> asTemplateVariables() {
         Map<String, String> result = new HashMap<>();
-        //result.put("payara_image", payaraImage);
+        result.put("application_image", applicationImage);
         result.put("application", application);
         result.put("instances", String.valueOf(instances));
         result.put("config_script", configScript);
-        //result.put("artifact", artifact);
         return result;
     }
 
+    /*
     public Map<String, String> asTemplateVariablesForNode(String dasIP) {
         Map<String, String> result = new HashMap<>();
         //result.put("payara_image", payaraImage.replace("payara/server-full", "server-node-k8s"));
@@ -70,6 +69,8 @@ public class PayaraDomainSpec {
         result.put("das_host", dasIP);
         return result;
     }
+
+     */
 
     @Override
     public String toString() {

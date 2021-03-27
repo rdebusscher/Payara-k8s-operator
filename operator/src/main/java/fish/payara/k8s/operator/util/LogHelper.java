@@ -1,5 +1,6 @@
-package fish.payara.k8s.operator;
+package fish.payara.k8s.operator.util;
 
+import fish.payara.k8s.operator.PayaraOperator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
