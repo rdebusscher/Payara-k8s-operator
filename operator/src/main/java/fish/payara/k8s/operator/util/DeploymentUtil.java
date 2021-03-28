@@ -1,6 +1,7 @@
 package fish.payara.k8s.operator.util;
 
 import fish.payara.k8s.operator.resource.PayaraDomainResource;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentList;
 import io.fabric8.kubernetes.client.KubernetesClient;
@@ -27,8 +28,10 @@ public class DeploymentUtil {
         if (noDeploymentYet(payaraDomainResource, ResourceType.DAS)) {
             // There is no deployment yet
 
+            TemplateVariableProvider templateVariableProvider = new TemplateVariableProvider(payaraDomainResource);
+
             // Process the payaraDomainDeployment.yaml file with ThymeLeaf so that it is customized with info from the Custom Resource
-            String processed = ThymeleafEngine.getInstance().processFile("/payaraDomainDeployment.yaml", payaraDomainResource.getSpec().asTemplateVariables());
+            String processed = ThymeleafEngine.getInstance().processFile("/payaraDomainDeployment.yaml", templateVariableProvider.mainTemplateVariables());
             ByteArrayInputStream inputStream = new ByteArrayInputStream(processed.getBytes());
             NonNamespaceOperation<Deployment, DeploymentList, RollableScalableResource<Deployment>> deployments = client.apps().deployments().inNamespace(namespace);
 
@@ -91,4 +94,55 @@ public class DeploymentUtil {
 
         }
     }
+
+    /**
+     * Add a K8S Deployment for the Instances.
+     * @param payaraDomainResource
+     * @param podDAS
+     * @throws IOException
+     */
+    public void addNewDeploymentNode(PayaraDomainResource payaraDomainResource, Pod podDAS) throws IOException {
+        if (noDeploymentYet(payaraDomainResource, ResourceType.INSTANCE)) {
+
+            TemplateVariableProvider templateVariableProvider = new TemplateVariableProvider(payaraDomainResource);
+
+            String dasIP = podUtil.lookupIP(podDAS);
+            // Add deployment for the Instances, similar to addNewDeploymentDomain().
+            String processed = ThymeleafEngine.getInstance().processFile("/payaraNodeDeployment.yaml", templateVariableProvider.nodeTemplateVariables(dasIP));
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(processed.getBytes());
+            NonNamespaceOperation<Deployment, DeploymentList, RollableScalableResource<Deployment>> deployments = client.apps().deployments().inNamespace(namespace);
+
+            Deployment newDeployment = deployments.load(inputStream).get();
+            newDeployment.getMetadata().getOwnerReferences().get(0).setUid(ResourceType.INSTANCE.name() + payaraDomainResource.getMetadata().getUid());
+            newDeployment.getMetadata().getOwnerReferences().get(0).setName(payaraDomainResource.getMetadata().getName());
+
+
+            deployments.create(newDeployment);
+            // LogHelper.log("Created new Deployment " + newDeployment);
+            LogHelper.log("Created new K8S Deployment for Node");
+            inputStream.close();
+        } else {
+            LogHelper.log("Deployment already available");
+        }
+    }
+
+    /**
+     * Remove the deployment for the Payara Instances.
+     *
+     * @param payaraDomainResource
+     */
+    public void removeDeploymentNode(PayaraDomainResource payaraDomainResource) {
+        Optional<Deployment> deployment = findDeployment(payaraDomainResource, ResourceType.INSTANCE);
+        if (deployment.isPresent()) {
+            NonNamespaceOperation<Deployment, DeploymentList, RollableScalableResource<Deployment>> deployments = client.apps().deployments().inNamespace(namespace);
+            deployments.delete(deployment.get());
+
+            // LogHelper.log("Removed Deployment Node" + deployment.get());  // With all info from K8S
+            LogHelper.log("Removed Node K8S Deployment ");
+
+        } else {
+            LogHelper.log("No deployment found for ");
+        }
+    }
+
 }

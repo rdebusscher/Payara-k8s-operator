@@ -5,7 +5,6 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.KubernetesClient;
 
 import java.util.Arrays;
-import java.util.Locale;
 
 public class PayaraUtil {
 
@@ -16,28 +15,23 @@ public class PayaraUtil {
     }
 
     public void prepareDomain(Pod pod, PayaraDomainResource payaraDomainResource) {
-
-        ensureConfig(pod, payaraDomainResource);
-        createDeploymentGroup(pod, payaraDomainResource);
+        NamingUtil namingUtil = new NamingUtil(payaraDomainResource);
+        ensureConfig(pod, namingUtil);
+        createDeploymentGroup(pod, namingUtil);
     }
 
-    private void createDeploymentGroup(Pod pod, PayaraDomainResource payaraDomainResource) {
-        String deploymentGroupName = defineDeploymentGroupName(payaraDomainResource);
+    private void createDeploymentGroup(Pod pod, NamingUtil namingUtil) {
 
         String command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} create-deployment-group  "
-                + deploymentGroupName;
+                + namingUtil.defineDeploymentGroupName();
 
         podUtil.executeWithinPod(pod, command);
         // FIXME check if successful executed
 
     }
 
-    private String defineDeploymentGroupName(PayaraDomainResource payaraDomainResource) {
-        return payaraDomainResource.getMetadata().getName().toLowerCase(Locale.ENGLISH) + "-dg";
-    }
-
-    private void ensureConfig(Pod pod, PayaraDomainResource payaraDomainResource) {
-        String configName = payaraDomainResource.getMetadata().getName().toLowerCase(Locale.ENGLISH) + "-config";
+    private void ensureConfig(Pod pod, NamingUtil namingUtil) {
+        String configName = namingUtil.defineConfigName();
 
         String command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} list-configs";
         String configsOutput = podUtil.executeWithinPod(pod, command);
@@ -63,6 +57,8 @@ public class PayaraUtil {
      * @param payaraDomainResource
      */
     public boolean deployApplication(Pod pod, PayaraDomainResource payaraDomainResource) {
+        NamingUtil namingUtil = new NamingUtil(payaraDomainResource);
+
         String applicationFile = payaraDomainResource.getSpec().getApplication();
         if (applicationFile == null || applicationFile.trim().isEmpty()) {
             applicationFile = "/opt/payara/k8s/" + payaraDomainResource.getMetadata().getName() + ".war";
@@ -76,8 +72,8 @@ public class PayaraUtil {
         String command = "test -f " + applicationFile + " && echo \"FILE exists.\"";
         String fileExists = podUtil.executeWithinPod(pod, command);
         if (fileExists.contains("FILE exists")) {
-            String deploymentGroupName = defineDeploymentGroupName(payaraDomainResource);
-            command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} deploy --target " + deploymentGroupName + " " + applicationFile;
+            String deploymentGroupName = namingUtil.defineDeploymentGroupName();
+            command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} deploy --virtualservers=server --target " + deploymentGroupName + " " + applicationFile;
             podUtil.executeWithinPod(pod, command);
             // FIXME Check if deploy successful.
             result = true;

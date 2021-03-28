@@ -5,6 +5,7 @@ import fish.payara.k8s.operator.util.AliveDetector;
 import fish.payara.k8s.operator.util.DeploymentUtil;
 import fish.payara.k8s.operator.util.LogHelper;
 import fish.payara.k8s.operator.util.PayaraUtil;
+import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.Watcher;
 
@@ -55,9 +56,11 @@ public class ResourceEventProcessor implements Runnable {
                 AliveDetector domainDetector = deploymentUtil.addNewDeploymentDomain(payaraDomainResource);
                 domainDetector.waitUntilReady();  // Waits until the domain is up.
                 if (domainDetector.isUpAndRunning()) {
-                    payaraUtil.prepareDomain(domainDetector.getPod(), payaraDomainResource);
-                    if (payaraUtil.deployApplication(domainDetector.getPod(), payaraDomainResource)) {
+                    Pod podDAS = domainDetector.getPod();
+                    payaraUtil.prepareDomain(podDAS, payaraDomainResource);
+                    if (payaraUtil.deployApplication(podDAS, payaraDomainResource)) {
                         // Deploy instances.
+                        deploymentUtil.addNewDeploymentNode(payaraDomainResource, podDAS);
                     }
                 }
             } catch (Exception e) {
@@ -67,6 +70,7 @@ public class ResourceEventProcessor implements Runnable {
         }
         if (action == Watcher.Action.DELETED) {
 
+            deploymentUtil.removeDeploymentNode(payaraDomainResource);
             deploymentUtil.removeDeploymentDomain(payaraDomainResource);
 
             LogHelper.log("Finished DELETE for resource " + payaraDomainResource);
