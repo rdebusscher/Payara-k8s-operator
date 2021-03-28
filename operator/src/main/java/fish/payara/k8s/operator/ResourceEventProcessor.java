@@ -56,6 +56,9 @@ public class ResourceEventProcessor implements Runnable {
                 domainDetector.waitUntilReady();  // Waits until the domain is up.
                 if (domainDetector.isUpAndRunning()) {
                     payaraUtil.prepareDomain(domainDetector.getPod(), payaraDomainResource);
+                    if (payaraUtil.deployApplication(domainDetector.getPod(), payaraDomainResource)) {
+                        // Deploy instances.
+                    }
                 }
             } catch (Exception e) {
                 e.printStackTrace();  // FIXME

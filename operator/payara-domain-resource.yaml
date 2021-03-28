@@ -6,3 +6,4 @@ spec:
   application-image: k8s-demo:0.5
   instance-image: server-node-k8s:5.2021.1
   instances: 2
+  application: testapp.war
