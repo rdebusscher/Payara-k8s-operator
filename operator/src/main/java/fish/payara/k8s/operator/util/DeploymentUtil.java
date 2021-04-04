@@ -2,11 +2,14 @@ package fish.payara.k8s.operator.util;
 
 import fish.payara.k8s.operator.resource.PayaraDomainResource;
 import io.fabric8.kubernetes.api.model.Pod;
+import io.fabric8.kubernetes.api.model.Service;
+import io.fabric8.kubernetes.api.model.ServiceList;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentList;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
 import io.fabric8.kubernetes.client.dsl.RollableScalableResource;
+import io.fabric8.kubernetes.client.dsl.ServiceResource;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -145,4 +148,69 @@ public class DeploymentUtil {
         }
     }
 
+    public void addNewServiceNode(PayaraDomainResource payaraDomainResource) throws IOException {
+        if (noServiceYet(payaraDomainResource)) {
+            //There is no service yet
+
+            TemplateVariableProvider templateVariableProvider = new TemplateVariableProvider(payaraDomainResource);
+
+            // Process the payaraNodeService.yaml file with ThymeLeaf so that it is customized with info from the Custom Resource
+            String processed = ThymeleafEngine.getInstance().processFile("//payaraNodeService.yaml", templateVariableProvider.nodeTemplateVariables(null));
+            ByteArrayInputStream inputStream = new ByteArrayInputStream(processed.getBytes());
+            NonNamespaceOperation<Service, ServiceList, ServiceResource<Service>> services = client.services().inNamespace(namespace);
+
+            // Load the Service into Kubernetes (not executed yet)
+            Service newService = services.load(inputStream).get();
+            // Add some metadata so that we can link this Service to the Custom Resource.
+            newService.getMetadata().getOwnerReferences().get(0).setUid(payaraDomainResource.getMetadata().getUid());
+            newService.getMetadata().getOwnerReferences().get(0).setName(payaraDomainResource.getMetadata().getName());
+
+            // Apply the Service to K8S.
+            services.create(newService);
+            //LogHelper.log("Created new Service " + newService);   // With all info from K8S
+            LogHelper.log("Created new K8S Node Service ");
+            inputStream.close();
+        } else {
+            LogHelper.log("Service already available");
+        }
+    }
+
+    private boolean noServiceYet(PayaraDomainResource payaraDomainResource) {
+        return !findService(payaraDomainResource).isPresent();
+    }
+
+    /**
+     * Find the Kubernetes Service.
+     *
+     * @param payaraDomainResource
+     * @return
+     */
+    private Optional<Service> findService(PayaraDomainResource payaraDomainResource) {
+        return client.services()
+                .inNamespace(namespace)
+                .list()
+                .getItems()
+                .stream()
+                .filter(d -> d.getMetadata().getOwnerReferences().stream()
+                        .anyMatch(ownerReference -> ownerReference.getUid().equals(payaraDomainResource.getMetadata().getUid())))
+                .findFirst();
+    }
+
+    /**
+     * Remove the Service for the Node.
+     *
+     * @param payaraDomainResource
+     */
+    public void removeServiceNode(PayaraDomainResource payaraDomainResource) {
+        Optional<Service> service = findService(payaraDomainResource);
+
+        if (service.isPresent()) {
+            NonNamespaceOperation<Service, ServiceList, ServiceResource<Service>> services = client.services().inNamespace(namespace);
+            services.delete(service.get());
+
+            //LogHelper.log("Removed Service " + service.get());  // With all info from K8S
+            LogHelper.log("Removed K8S Node Service ");
+
+        }
+    }
 }

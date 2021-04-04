@@ -61,6 +61,7 @@ public class ResourceEventProcessor implements Runnable {
                     if (payaraUtil.deployApplication(podDAS, payaraDomainResource)) {
                         // Deploy instances.
                         deploymentUtil.addNewDeploymentNode(payaraDomainResource, podDAS);
+                        deploymentUtil.addNewServiceNode(payaraDomainResource);
                     }
                 }
             } catch (Exception e) {
@@ -71,6 +72,7 @@ public class ResourceEventProcessor implements Runnable {
         if (action == Watcher.Action.DELETED) {
 
             deploymentUtil.removeDeploymentNode(payaraDomainResource);
+            deploymentUtil.removeServiceNode(payaraDomainResource);
             deploymentUtil.removeDeploymentDomain(payaraDomainResource);
 
             LogHelper.log("Finished DELETE for resource " + payaraDomainResource);
