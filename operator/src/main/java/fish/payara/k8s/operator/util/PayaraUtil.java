@@ -38,7 +38,7 @@ public class PayaraUtil {
         // FIXME check if successful executed
 
         String[] lines = configsOutput.split("\n");
-        boolean configExists = Arrays.asList(Arrays.copyOfRange(lines, 0, lines.length - 2)).contains(configName);
+        boolean configExists = Arrays.asList(Arrays.copyOfRange(lines, 0, lines.length - 1)).contains(configName);
 
         if (!configExists) {
             command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} copy-config default-config  "

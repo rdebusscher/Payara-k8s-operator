@@ -54,6 +54,10 @@ public class ResourceEventProcessor implements Runnable {
             // New Yaml file, Add DAS and a number of Instances and join them in a Deployment Group.
             try {
                 AliveDetector domainDetector = deploymentUtil.addNewDeploymentDomain(payaraDomainResource);
+                if (domainDetector == null) {
+                    // Domain already running
+                    return;
+                }
                 domainDetector.waitUntilReady();  // Waits until the domain is up.
                 if (domainDetector.isUpAndRunning()) {
                     Pod podDAS = domainDetector.getPod();
