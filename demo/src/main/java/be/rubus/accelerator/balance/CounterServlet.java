@@ -28,6 +28,7 @@ public class CounterServlet extends HttpServlet {
         StringBuilder response = new StringBuilder();
 
         response.append(getHost());
+        response.append(getSizing());
         response.append(tick());
         response.append("\n");
 
@@ -47,9 +48,16 @@ public class CounterServlet extends HttpServlet {
 
     }
 
+    private String getSizing() {
+        int processors = Runtime.getRuntime().availableProcessors();
+        long memory = Runtime.getRuntime().maxMemory() / 1024 / 1024;
+        return String.format("\nExecuted with %s processors and %s Mb ", processors, memory);
+
+    }
+
     private String getHost() {
         try {
-            return "\nExecuted on "+InetAddress.getLocalHost().getHostName();
+            return "\nExecuted on " + InetAddress.getLocalHost().getHostName();
         } catch (UnknownHostException e) {
             return "Unable to retrieve host";
         }
