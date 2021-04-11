@@ -21,6 +21,12 @@ public class PayaraDomainSpec {
     @JsonProperty("config-script")
     private String configScript;
 
+    @JsonProperty("cpu")
+    private int cpu;
+
+    @JsonProperty("memory")
+    private int memory;
+
     public String getApplicationImage() {
         return applicationImage;
     }
@@ -41,6 +47,14 @@ public class PayaraDomainSpec {
         return configScript;
     }
 
+    public int getCpu() {
+        return cpu;
+    }
+
+    public int getMemory() {
+        return memory;
+    }
+
     @Override
     public String toString() {
         return "PayaraDomainSpec{" +
@@ -49,6 +63,8 @@ public class PayaraDomainSpec {
                 ", application='" + application + '\'' +
                 ", instances=" + instances +
                 ", configScript='" + configScript + '\'' +
+                ", cpu=" + cpu +
+                ", memory=" + memory +
                 '}';
     }
 }

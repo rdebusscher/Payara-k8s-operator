@@ -23,6 +23,13 @@ spec:
       containers:
         - name: node
           image: [# th:text="${instance_image}"/]
+          resources:
+            limits:
+              cpu: "[# th:text="${cpu}"/]m"
+              memory: "[# th:text="${memory}"/]Mi"
+            requests:
+              cpu: "[# th:text="${cpu}"/]m"
+              memory: "[# th:text="${memory}"/]Mi"
           ports:
             - containerPort: 28080
           env:

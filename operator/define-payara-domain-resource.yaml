@@ -32,6 +32,14 @@ spec:
                   minimum: 2
                 config-script:
                   type: string
+                cpu:
+                  type: integer
+                  minimum: 500
+                  default: 2000
+                memory:
+                  type: integer
+                  minimum: 512
+                  default: 512
       additionalPrinterColumns:
         - name: applicationImage
           type: string

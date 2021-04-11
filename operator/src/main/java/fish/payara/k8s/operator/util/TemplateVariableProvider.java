@@ -40,6 +40,8 @@ public class TemplateVariableProvider {
         result.put("instances", String.valueOf(payaraDomainResource.getSpec().getInstances()));
         result.put("deployment_group", namingUtil.defineDeploymentGroupName());
         result.put("config_name", namingUtil.defineConfigName());
+        result.put("cpu", String.valueOf(payaraDomainResource.getSpec().getCpu()));
+        result.put("memory", String.valueOf(payaraDomainResource.getSpec().getMemory()));
 
         result.put("das_host", dasIP);
         return result;

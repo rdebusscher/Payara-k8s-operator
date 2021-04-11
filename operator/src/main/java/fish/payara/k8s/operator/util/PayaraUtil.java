@@ -47,7 +47,26 @@ public class PayaraUtil {
             // FIXME check if successful executed
             LogHelper.log(copyOutput);
 
+            updateJVMOptionsMemory(pod, configName);
         }
+    }
+
+    private void updateJVMOptionsMemory(Pod pod, String configName) {
+
+        String command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} list-jvm-options --target="+configName;
+        String jvmOptionsOutput = podUtil.executeWithinPod(pod, command);
+        String[] lines = jvmOptionsOutput.split("\n");
+        Arrays.stream(lines).
+                filter(o -> o.startsWith("-Xss") || o.startsWith("-Xmx")|| o.startsWith("-Xms"))
+                .forEach(o -> {
+                    String command2 = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} delete-jvm-options --target="+configName+" "+o;
+                    podUtil.executeWithinPod(pod, command2);
+
+                });
+
+        command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} create-jvm-options --target="+configName+" '-XX\\:+UseContainerSupport:-XX\\:MaxRAMPercentage=${ENV=MEM_MAX_RAM_PERCENTAGE}:-Xss${ENV=MEM_XSS}'";
+        podUtil.executeWithinPod(pod, command);
+
     }
 
     /**
