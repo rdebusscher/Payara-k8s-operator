@@ -60,7 +60,7 @@ public class PodUtil {
      * @param command
      * @return
      */
-    public String executeWithinPod(Pod pod, String command) {
+    public String executeWithinPod(Pod pod, String command, CommandOutputCheck check) {
         LogHelper.log(command);
 
         final CountDownLatch execLatch = new CountDownLatch(1);
@@ -88,7 +88,10 @@ public class PodUtil {
             e.printStackTrace(); // FIXME
         }
         String commandOutput = baos.toString();
-        LogHelper.log(commandOutput);
+        if (!check.isCommandExecutedSuccessful(commandOutput)) {
+            LogHelper.log(String.format("command '%s' failed with:", command));
+            LogHelper.log(commandOutput);
+        }
         return commandOutput;
     }
 

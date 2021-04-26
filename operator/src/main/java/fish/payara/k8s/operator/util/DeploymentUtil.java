@@ -70,7 +70,7 @@ public class DeploymentUtil {
                 .stream()
                 .filter(d -> d.getMetadata().getOwnerReferences().stream()
                         .anyMatch(ownerReference -> ownerReference.getUid().equals(type.name() + payaraDomainResource.getMetadata().getUid())))
-                .findFirst();
+                .findAny();
     }
 
     private AliveDetector waitServerStarted() {
