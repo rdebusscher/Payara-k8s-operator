@@ -3,6 +3,7 @@ package fish.payara.k8s.operator;
 import fish.payara.k8s.operator.resource.PayaraDomainResource;
 import fish.payara.k8s.operator.resource.PayaraDomainResourceList;
 import fish.payara.k8s.operator.util.LogHelper;
+import fish.payara.k8s.operator.util.VersionReader;
 import io.fabric8.kubernetes.api.model.HasMetadata;
 import io.fabric8.kubernetes.client.*;
 import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
@@ -29,6 +30,9 @@ public class PayaraOperator {
     private final BlockingDeque<EventItem> transferQueue = new LinkedBlockingDeque<>();
 
     public static void main(String args[]) {
+        VersionReader versionReader = new VersionReader("payara-operator");
+        LogHelper.log("Running version " + versionReader.getReleaseVersion());
+        LogHelper.log("Build at " + versionReader.getBuildTime());
 
         Config config = new ConfigBuilder().build();
         KubernetesClient client = new DefaultKubernetesClient(config);
