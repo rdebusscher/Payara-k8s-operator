@@ -23,6 +23,10 @@ spec:
       containers:
         - name: node
           image: [# th:text="${instance_image}"/]
+          command: [ "/bin/sh", "-c" ]
+          args:
+            - echo "AS_ADMIN_PASSWORD=${ADMIN_PASSWORD}" > ${PAYARA_PASSWORD_FILE};
+              ${SCRIPT_DIR}/entrypoint.sh;
           resources:
             limits:
               cpu: "[# th:text="${cpu}"/]m"

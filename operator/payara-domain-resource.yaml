@@ -4,6 +4,6 @@ metadata:
   name: test
 spec:
   application-image: k8s-demo:0.5
-  instance-image: server-node-k8s:5.2021.1
+  instance-image: server-node-k8s:5.2021.2
   instances: 2
   application: testapp.war
