@@ -34,6 +34,24 @@ spec:
             requests:
               cpu: "[# th:text="${cpu}"/]m"
               memory: "[# th:text="${memory}"/]Mi"
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 28080
+            periodSeconds: 3
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: 28080
+            initialDelaySeconds: 30
+            periodSeconds: 2
+            failureThreshold: 20
+          startupProbe:
+            httpGet:
+              path: /health
+              port: 28080
+            periodSeconds: 5
+            failureThreshold: 40
           ports:
             - containerPort: 28080
           env:
