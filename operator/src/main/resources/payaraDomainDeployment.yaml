@@ -1,13 +1,12 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: payara-domain
+  name: payara-domain-[# th:text="${name}"/]
   labels:
     app: domain
-  generateName: example-
   ownerReferences:
-    - apiVersion: apps/v1
-      kind: Example
+    - apiVersion: poc.payara.fish/v1alpha
+      kind: Domain
       name: placeholder
       uid: placeholder
 spec:

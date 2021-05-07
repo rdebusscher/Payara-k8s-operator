@@ -41,7 +41,7 @@ public class DeploymentUtil {
             // Load the Deployment into Kubernetes (not executed yet)
             Deployment newDeployment = deployments.load(inputStream).get();
             // Add some metadata so that we can link this deployment to the Custom Resource.
-            newDeployment.getMetadata().getOwnerReferences().get(0).setUid(ResourceType.DAS.name() + payaraDomainResource.getMetadata().getUid());
+            newDeployment.getMetadata().getOwnerReferences().get(0).setUid(payaraDomainResource.getMetadata().getUid());
             newDeployment.getMetadata().getOwnerReferences().get(0).setName(payaraDomainResource.getMetadata().getName());
 
             // Apply the Deployment to K8S.
@@ -68,8 +68,9 @@ public class DeploymentUtil {
                 .list()
                 .getItems()
                 .stream()
+                .filter(d -> d.getMetadata().getLabels().get("app").equals(type.getAppLabel()))
                 .filter(d -> d.getMetadata().getOwnerReferences().stream()
-                        .anyMatch(ownerReference -> ownerReference.getUid().equals(type.name() + payaraDomainResource.getMetadata().getUid())))
+                        .anyMatch(ownerReference -> ownerReference.getUid().equals(payaraDomainResource.getMetadata().getUid())))
                 .findAny();
     }
 
@@ -116,7 +117,7 @@ public class DeploymentUtil {
             NonNamespaceOperation<Deployment, DeploymentList, RollableScalableResource<Deployment>> deployments = client.apps().deployments().inNamespace(namespace);
 
             Deployment newDeployment = deployments.load(inputStream).get();
-            newDeployment.getMetadata().getOwnerReferences().get(0).setUid(ResourceType.INSTANCE.name() + payaraDomainResource.getMetadata().getUid());
+            newDeployment.getMetadata().getOwnerReferences().get(0).setUid(payaraDomainResource.getMetadata().getUid());
             newDeployment.getMetadata().getOwnerReferences().get(0).setName(payaraDomainResource.getMetadata().getName());
 
 

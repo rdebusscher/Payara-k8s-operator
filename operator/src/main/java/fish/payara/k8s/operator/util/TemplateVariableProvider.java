@@ -24,6 +24,7 @@ public class TemplateVariableProvider {
      */
     public Map<String, String> mainTemplateVariables() {
         Map<String, String> result = new HashMap<>();
+        result.put("name", payaraDomainResource.getMetadata().getName());
         result.put("application_image", payaraDomainResource.getSpec().getApplicationImage());
         return result;
     }
@@ -36,6 +37,7 @@ public class TemplateVariableProvider {
     public Map<String, String> nodeTemplateVariables(String dasIP) {
         Map<String, String> result = new HashMap<>();
 
+        result.put("name", payaraDomainResource.getMetadata().getName());
         result.put("instance_image", payaraDomainResource.getSpec().getInstanceImage());
         result.put("instances", String.valueOf(payaraDomainResource.getSpec().getInstances()));
         result.put("deployment_group", namingUtil.defineDeploymentGroupName());

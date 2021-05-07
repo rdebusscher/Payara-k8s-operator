@@ -1,12 +1,13 @@
 apiVersion: autoscaling/v1
 kind: HorizontalPodAutoscaler
 metadata:
-  name: payara-node
+  name: payara-node-[# th:text="${name}"/]
   ownerReferences:
-    - apiVersion: apps/v1
-      kind: Example
+    - apiVersion: poc.payara.fish/v1alpha
+      kind: Domain
       name: placeholder
       uid: placeholder
+
 spec:
   maxReplicas: [# th:text="${max_instances}"/]
   minReplicas: 2

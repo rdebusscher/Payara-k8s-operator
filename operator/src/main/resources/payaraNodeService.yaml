@@ -1,13 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: payara-node
+  name: payara-node-[# th:text="${name}"/]
   labels:
     name: payara
-  generateName: example-
   ownerReferences:
-    - apiVersion: apps/v1
-      kind: Example
+    - apiVersion: poc.payara.fish/v1alpha
+      kind: Domain
       name: placeholder
       uid: placeholder
 spec:
