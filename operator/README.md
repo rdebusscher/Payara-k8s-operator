@@ -97,3 +97,15 @@ With the following steps, all resources can be cleaned up on the Kubernetes Clus
     kubectl delete -f payara-operator.yaml
 
     kubectl delete -f define-payara-domain-resource.yaml
+
+## Test Autoscaling
+
+For testing with the Horizontal Pod scaler, you can perform the following steps. 
+
+1\. Make sure the Custom resource document specifies the `max-instances` property (greater as 2) as this triggers the Operator to create the Horizontal Pod scaler Object.
+
+    max-instances: 4
+    cpu-target: 50
+
+2\. When the environment is up and running within Kubernetes, use the `StressTest` program in the test folder of the toplevel demo directory to stress the application (and the pods). This results in an increase in the number of pods.   
+
