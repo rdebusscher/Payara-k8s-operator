@@ -27,6 +27,12 @@ public class PayaraDomainSpec {
     @JsonProperty("memory")
     private int memory;
 
+    @JsonProperty("max-instances")
+    private int maxInstances;
+
+    @JsonProperty("cpu-target")
+    private int cpuTarget;
+
     public String getApplicationImage() {
         return applicationImage;
     }
@@ -55,6 +61,14 @@ public class PayaraDomainSpec {
         return memory;
     }
 
+    public int getMaxInstances() {
+        return maxInstances;
+    }
+
+    public int getCpuTarget() {
+        return cpuTarget;
+    }
+
     @Override
     public String toString() {
         return "PayaraDomainSpec{" +
@@ -65,6 +79,8 @@ public class PayaraDomainSpec {
                 ", configScript='" + configScript + '\'' +
                 ", cpu=" + cpu +
                 ", memory=" + memory +
+                ", maxInstances=" + maxInstances +
+                ", cpuTarget=" + cpuTarget +
                 '}';
     }
 }

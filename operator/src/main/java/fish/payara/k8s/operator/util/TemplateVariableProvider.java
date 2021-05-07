@@ -42,6 +42,8 @@ public class TemplateVariableProvider {
         result.put("config_name", namingUtil.defineConfigName());
         result.put("cpu", String.valueOf(payaraDomainResource.getSpec().getCpu()));
         result.put("memory", String.valueOf(payaraDomainResource.getSpec().getMemory()));
+        result.put("max_instances", String.valueOf(payaraDomainResource.getSpec().getMaxInstances()));
+        result.put("cpu_target", String.valueOf(payaraDomainResource.getSpec().getCpuTarget()));
 
         result.put("das_host", dasIP);
         return result;

@@ -40,6 +40,15 @@ spec:
                   type: integer
                   minimum: 512
                   default: 512
+                max-instances:
+                  type: integer
+                  minimum: 2
+                  default: 2
+                cpu-target:
+                  type: integer
+                  minimum: 30
+                  maximum: 90
+                  default: 80
       additionalPrinterColumns:
         - name: applicationImage
           type: string

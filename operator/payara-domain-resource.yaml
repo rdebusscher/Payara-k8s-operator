@@ -7,3 +7,5 @@ spec:
   instance-image: server-node-k8s:5.2021.2
   instances: 2
   application: testapp.war
+  max-instances: 4
+  cpu-target: 50

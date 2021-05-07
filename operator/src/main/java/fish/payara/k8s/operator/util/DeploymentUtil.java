@@ -6,10 +6,10 @@ import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceList;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
 import io.fabric8.kubernetes.api.model.apps.DeploymentList;
+import io.fabric8.kubernetes.api.model.autoscaling.v1.HorizontalPodAutoscaler;
+import io.fabric8.kubernetes.api.model.autoscaling.v1.HorizontalPodAutoscalerList;
 import io.fabric8.kubernetes.client.KubernetesClient;
-import io.fabric8.kubernetes.client.dsl.NonNamespaceOperation;
-import io.fabric8.kubernetes.client.dsl.RollableScalableResource;
-import io.fabric8.kubernetes.client.dsl.ServiceResource;
+import io.fabric8.kubernetes.client.dsl.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -210,6 +210,73 @@ public class DeploymentUtil {
 
             //LogHelper.log("Removed Service " + service.get());  // With all info from K8S
             LogHelper.log("Removed K8S Node Service ");
+
+        }
+    }
+
+    /**
+     * Add a Horizontal Pod Scaler to to domain to control the Payara instances.
+     * @param payaraDomainResource
+     * @throws IOException
+     */
+    public void addAutoscale(PayaraDomainResource payaraDomainResource) throws IOException {
+        if (payaraDomainResource.getSpec().getMaxInstances() != 2) {
+            if (noScalerYet(payaraDomainResource)) {
+
+                TemplateVariableProvider templateVariableProvider = new TemplateVariableProvider(payaraDomainResource);
+
+                String processed = ThymeleafEngine.getInstance().processFile("//payaraNodeScaler.yaml", templateVariableProvider.nodeTemplateVariables(null));
+                ByteArrayInputStream inputStream = new ByteArrayInputStream(processed.getBytes());
+                NonNamespaceOperation<HorizontalPodAutoscaler, HorizontalPodAutoscalerList, Resource<HorizontalPodAutoscaler>> scalers = client.autoscaling().v1().horizontalPodAutoscalers().inNamespace(namespace);
+
+                // Load the AutoScaler into Kubernetes (not executed yet)
+                HorizontalPodAutoscaler newScaler = scalers.load(inputStream).get();
+                // Add some metadata so that we can link this Service to the Custom Resource.
+                newScaler.getMetadata().getOwnerReferences().get(0).setUid(payaraDomainResource.getMetadata().getUid());
+                newScaler.getMetadata().getOwnerReferences().get(0).setName(payaraDomainResource.getMetadata().getName());
+
+                // Apply the Scaler to K8S.
+                scalers.create(newScaler);
+                inputStream.close();
+
+                LogHelper.log("Added Horizontal Scaler to Node Deployment");
+            }
+        }
+    }
+
+    /**
+     * Find the Kubernetes Horizontal scaler.
+     *
+     * @param payaraDomainResource
+     * @return
+     */
+    private Optional<HorizontalPodAutoscaler> findAutoscaler(PayaraDomainResource payaraDomainResource) {
+        return client.autoscaling().v1().horizontalPodAutoscalers()
+                .inNamespace(namespace)
+                .list()
+                .getItems()
+                .stream()
+                .filter(d -> d.getMetadata().getOwnerReferences().stream()
+                        .anyMatch(ownerReference -> ownerReference.getUid().equals(payaraDomainResource.getMetadata().getUid())))
+                .findFirst();
+    }
+
+    private boolean noScalerYet(PayaraDomainResource payaraDomainResource) {
+        return !findAutoscaler(payaraDomainResource).isPresent();
+    }
+
+
+    /**
+     * Remove the Horizontal Pod Scaler that is created for the Payara Domain Resource.
+     * @param payaraDomainResource
+     */
+    public void removeAutoscale(PayaraDomainResource payaraDomainResource) {
+        Optional<HorizontalPodAutoscaler> autoscaler = findAutoscaler(payaraDomainResource);
+        if (autoscaler.isPresent()) {
+            MixedOperation<HorizontalPodAutoscaler, HorizontalPodAutoscalerList, Resource<HorizontalPodAutoscaler>> scalers = client.autoscaling().v1().horizontalPodAutoscalers();
+            scalers.delete(autoscaler.get());
+
+            LogHelper.log("Removed K8S Node Horizontal Scaler ");
 
         }
     }

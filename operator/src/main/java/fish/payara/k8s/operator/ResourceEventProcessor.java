@@ -66,6 +66,7 @@ public class ResourceEventProcessor implements Runnable {
                         // Deploy instances.
                         deploymentUtil.addNewDeploymentNode(payaraDomainResource, podDAS);
                         deploymentUtil.addNewServiceNode(payaraDomainResource);
+                        deploymentUtil.addAutoscale(payaraDomainResource);
                     }
                 }
             } catch (Exception e) {
@@ -75,6 +76,7 @@ public class ResourceEventProcessor implements Runnable {
         }
         if (action == Watcher.Action.DELETED) {
 
+            deploymentUtil.removeAutoscale(payaraDomainResource);
             deploymentUtil.removeDeploymentNode(payaraDomainResource);
             deploymentUtil.removeServiceNode(payaraDomainResource);
             deploymentUtil.removeDeploymentDomain(payaraDomainResource);

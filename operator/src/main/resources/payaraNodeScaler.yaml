@@ -1,0 +1,17 @@
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: payara-node
+  ownerReferences:
+    - apiVersion: apps/v1
+      kind: Example
+      name: placeholder
+      uid: placeholder
+spec:
+  maxReplicas: [# th:text="${max_instances}"/]
+  minReplicas: 2
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: payara-node
+  targetCPUUtilizationPercentage: [# th:text="${cpu_target}"/]
