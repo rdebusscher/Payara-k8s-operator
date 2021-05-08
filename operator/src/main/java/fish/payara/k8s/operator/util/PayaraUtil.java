@@ -109,4 +109,16 @@ public class PayaraUtil {
         }
         return result;
     }
+
+    /**
+     * Execute The Configuration script.
+     *
+     * @param pod
+     * @param payaraDomainResource
+     */
+    public void executeConfigScript(Pod pod, PayaraDomainResource payaraDomainResource) {
+        String command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} multimode --file "+payaraDomainResource.getSpec().getConfigScript();
+        boolean verbose = payaraDomainResource.getSpec().isVerbose();
+        podUtil.executeWithinPod(pod, command, DEFAULT_CHECK, verbose);
+    }
 }

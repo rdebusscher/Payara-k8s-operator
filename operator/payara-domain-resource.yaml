@@ -7,4 +7,5 @@ spec:
   instance-image: server-node-k8s:5.2021.2
   instances: 2
   application: testapp.war
-  verbose: true
+#  config-script: /opt/payara/k8s/test-script
+#  verbose: true

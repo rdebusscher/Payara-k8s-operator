@@ -62,6 +62,9 @@ public class ResourceEventProcessor implements Runnable {
                 if (domainDetector.isUpAndRunning()) {
                     Pod podDAS = domainDetector.getPod();
                     payaraUtil.prepareDomain(podDAS, payaraDomainResource);
+                    if (payaraDomainResource.getSpec().getConfigScript() != null && !payaraDomainResource.getSpec().getConfigScript().isEmpty()) {
+                        payaraUtil.executeConfigScript(podDAS, payaraDomainResource);
+                    }
                     if (payaraUtil.deployApplication(podDAS, payaraDomainResource)) {
                         // Deploy instances.
                         deploymentUtil.addNewDeploymentNode(payaraDomainResource, podDAS);
