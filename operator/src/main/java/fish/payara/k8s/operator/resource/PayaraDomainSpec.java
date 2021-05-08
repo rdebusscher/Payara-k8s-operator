@@ -33,6 +33,9 @@ public class PayaraDomainSpec {
     @JsonProperty("cpu-target")
     private int cpuTarget;
 
+    @JsonProperty("verbose")
+    private boolean verbose;
+
     public String getApplicationImage() {
         return applicationImage;
     }
@@ -69,6 +72,10 @@ public class PayaraDomainSpec {
         return cpuTarget;
     }
 
+    public boolean isVerbose() {
+        return verbose;
+    }
+
     @Override
     public String toString() {
         return "PayaraDomainSpec{" +
@@ -81,6 +88,7 @@ public class PayaraDomainSpec {
                 ", memory=" + memory +
                 ", maxInstances=" + maxInstances +
                 ", cpuTarget=" + cpuTarget +
+                ", verbose=" + verbose +
                 '}';
     }
 }

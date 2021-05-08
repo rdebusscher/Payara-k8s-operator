@@ -28,24 +28,25 @@ public class PayaraUtil {
 
     public void prepareDomain(Pod pod, PayaraDomainResource payaraDomainResource) {
         NamingUtil namingUtil = new NamingUtil(payaraDomainResource);
-        ensureConfig(pod, namingUtil);
-        createDeploymentGroup(pod, namingUtil);
+        boolean verbose = payaraDomainResource.getSpec().isVerbose();
+        ensureConfig(pod, namingUtil, verbose);
+        createDeploymentGroup(pod, namingUtil, verbose);
     }
 
-    private void createDeploymentGroup(Pod pod, NamingUtil namingUtil) {
+    private void createDeploymentGroup(Pod pod, NamingUtil namingUtil, boolean verbose) {
 
         String command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} create-deployment-group  "
                 + namingUtil.defineDeploymentGroupName();
 
-        podUtil.executeWithinPod(pod, command, DEFAULT_CHECK);
+        podUtil.executeWithinPod(pod, command, DEFAULT_CHECK, verbose);
 
     }
 
-    private void ensureConfig(Pod pod, NamingUtil namingUtil) {
+    private void ensureConfig(Pod pod, NamingUtil namingUtil, boolean verbose) {
         String configName = namingUtil.defineConfigName();
 
         String command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} list-configs";
-        String configsOutput = podUtil.executeWithinPod(pod, command, DEFAULT_CHECK);
+        String configsOutput = podUtil.executeWithinPod(pod, command, DEFAULT_CHECK, verbose);
 
         String[] lines = configsOutput.split("\n");
         boolean configExists = Arrays.asList(Arrays.copyOfRange(lines, 0, lines.length - 1)).contains(configName);
@@ -53,27 +54,27 @@ public class PayaraUtil {
         if (!configExists) {
             command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} copy-config default-config  "
                     + configName;
-            String copyOutput = podUtil.executeWithinPod(pod, command, DEFAULT_CHECK);
+            podUtil.executeWithinPod(pod, command, DEFAULT_CHECK, verbose);
 
-            updateJVMOptionsMemory(pod, configName);
+            updateJVMOptionsMemory(pod, configName, verbose);
         }
     }
 
-    private void updateJVMOptionsMemory(Pod pod, String configName) {
+    private void updateJVMOptionsMemory(Pod pod, String configName, boolean verbose) {
 
         String command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} list-jvm-options --target=" + configName;
-        String jvmOptionsOutput = podUtil.executeWithinPod(pod, command, DEFAULT_CHECK);
+        String jvmOptionsOutput = podUtil.executeWithinPod(pod, command, DEFAULT_CHECK, verbose);
         String[] lines = jvmOptionsOutput.split("\n");
         Arrays.stream(lines).
                 filter(o -> o.startsWith("-Xss") || o.startsWith("-Xmx") || o.startsWith("-Xms"))
                 .forEach(o -> {
                     String command2 = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} delete-jvm-options --target=" + configName + " " + o;
-                    podUtil.executeWithinPod(pod, command2, DEFAULT_CHECK);
+                    podUtil.executeWithinPod(pod, command2, DEFAULT_CHECK, verbose);
 
                 });
 
         command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} create-jvm-options --target=" + configName + " '-XX\\:+UseContainerSupport:-XX\\:MaxRAMPercentage=${ENV=MEM_MAX_RAM_PERCENTAGE}:-Xss${ENV=MEM_XSS}'";
-        podUtil.executeWithinPod(pod, command, DEFAULT_CHECK);
+        podUtil.executeWithinPod(pod, command, DEFAULT_CHECK, verbose);
 
     }
 
@@ -94,14 +95,16 @@ public class PayaraUtil {
             applicationFile = "/opt/payara/k8s/" + applicationFile;
         }
 
+        boolean verbose = payaraDomainResource.getSpec().isVerbose();
+
         boolean result = false;
 
         String command = "test -f " + applicationFile + " && echo \"FILE exists.\"";
-        String fileExists = podUtil.executeWithinPod(pod, command, NOOP_CHECK);
+        String fileExists = podUtil.executeWithinPod(pod, command, NOOP_CHECK, verbose);
         if (fileExists.contains("FILE exists")) {
             String deploymentGroupName = namingUtil.defineDeploymentGroupName();
             command = "${PAYARA_DIR}/bin/asadmin --user=${ADMIN_USER} --passwordfile=${PASSWORD_FILE} deploy --virtualservers=server --target " + deploymentGroupName + " " + applicationFile;
-            podUtil.executeWithinPod(pod, command, DEFAULT_CHECK);
+            podUtil.executeWithinPod(pod, command, DEFAULT_CHECK, verbose);
             result = true;
         }
         return result;

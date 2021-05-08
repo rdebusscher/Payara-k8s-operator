@@ -49,6 +49,9 @@ spec:
                   minimum: 30
                   maximum: 90
                   default: 80
+                verbose:
+                  type: boolean
+                  default: false
       additionalPrinterColumns:
         - name: applicationImage
           type: string

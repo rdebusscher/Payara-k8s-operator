@@ -12,19 +12,23 @@ public class AliveDetector implements Runnable {
     private final CountDownLatch upSignal = new CountDownLatch(1);
 
     private final PodUtil podUtil;
+    private boolean verbose;
     private Pod pod;
 
     boolean upAndRunning = false;
 
-    public AliveDetector(PodUtil podUtil) {
+    public AliveDetector(PodUtil podUtil, boolean verbose) {
         this.podUtil = podUtil;
+        this.verbose = verbose;
     }
 
     @Override
     public void run() {
         // First we have to make sure the pod has an IP, so get the IP (or wait until we have one)
         String ip = waitForIP();
-        LogHelper.log("Wait until domain is up at " + ip);
+        if (verbose) {
+            LogHelper.log("Wait until domain is up at " + ip);
+        }
         // FIXME Define some timeout so that we do not wait indefinitely.
         try {
             while (!upAndRunning) {
@@ -33,7 +37,7 @@ public class AliveDetector implements Runnable {
             }
             upAndRunning = true;
         } catch (InterruptedException e) {
-            e.printStackTrace();  // FIXME
+            LogHelper.exception(e);
         } finally {
 
             upSignal.countDown();  // Using countdownLatch to have efficient waiting without Thread.sleep.

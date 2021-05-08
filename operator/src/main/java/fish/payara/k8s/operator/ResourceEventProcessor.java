@@ -39,7 +39,7 @@ public class ResourceEventProcessor implements Runnable {
                 // Handle each event that appears on the queue.
                 handleEvent(transferQueue.take());
             } catch (InterruptedException e) {
-                e.printStackTrace(); // fixme
+                LogHelper.exception(e);
             }
         }
     }
@@ -70,9 +70,8 @@ public class ResourceEventProcessor implements Runnable {
                     }
                 }
             } catch (Exception e) {
-                e.printStackTrace();  // FIXME
+                LogHelper.exception(e);
             }
-            LogHelper.log("Finished ADD for resource " + payaraDomainResource);
         }
         if (action == Watcher.Action.DELETED) {
 
@@ -80,13 +79,18 @@ public class ResourceEventProcessor implements Runnable {
             deploymentUtil.removeDeploymentNode(payaraDomainResource);
             deploymentUtil.removeServiceNode(payaraDomainResource);
             deploymentUtil.removeDeploymentDomain(payaraDomainResource);
-
-            LogHelper.log("Finished DELETE for resource " + payaraDomainResource);
         }
         if (action == Watcher.Action.MODIFIED) {
             LogHelper.log("TODO: Modification not implemented yet");
 
-            LogHelper.log("Finished MODIFY for resource " + payaraDomainResource);
+        }
+        logEndEvent(action, payaraDomainResource);
+    }
+
+    private void logEndEvent(Watcher.Action action, PayaraDomainResource payaraDomainResource) {
+        LogHelper.log(String.format("Finished processing event '%s' for Payara Domain '%s'", action, payaraDomainResource.getMetadata().getName()));
+        if (payaraDomainResource.getSpec().isVerbose()) {
+            LogHelper.log(String.format("Finished event '%s' for Resource '%s'", action, payaraDomainResource));
         }
     }
 }

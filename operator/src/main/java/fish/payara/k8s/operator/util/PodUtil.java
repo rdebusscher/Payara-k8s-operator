@@ -60,8 +60,10 @@ public class PodUtil {
      * @param command
      * @return
      */
-    public String executeWithinPod(Pod pod, String command, CommandOutputCheck check) {
-        LogHelper.log(command);
+    public String executeWithinPod(Pod pod, String command, CommandOutputCheck check, boolean verbose) {
+        if (verbose) {
+            LogHelper.log(command);
+        }
 
         final CountDownLatch execLatch = new CountDownLatch(1);
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -85,7 +87,7 @@ public class PodUtil {
             // Don't wait forever until command is executed (can be stuck for example) so max 1 min.
             execLatch.await(1, TimeUnit.MINUTES);
         } catch (InterruptedException e) {
-            e.printStackTrace(); // FIXME
+            LogHelper.exception(e);
         }
         String commandOutput = baos.toString();
         if (!check.isCommandExecutedSuccessful(commandOutput)) {

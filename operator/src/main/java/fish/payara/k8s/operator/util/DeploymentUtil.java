@@ -47,13 +47,17 @@ public class DeploymentUtil {
             // Apply the Deployment to K8S.
             deployments.create(newDeployment);
             // With all info from K8S
-            LogHelper.log("Created new K8S Domain Deployment");
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("Created new K8S Deployment for '%s' Domain", payaraDomainResource.getMetadata().getName()));
+            }
 
             inputStream.close();
             // Return a AliveDetector so tat we can wait until DAS is up and running.
-            return waitServerStarted();
+            return waitServerStarted(payaraDomainResource.getSpec().isVerbose());
         } else {
-            LogHelper.log("K8S Domain Deployment already available");
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("K8S Deployment for '%s' Domain already exists", payaraDomainResource.getMetadata().getName()));
+            }
         }
         return null;
     }
@@ -74,8 +78,8 @@ public class DeploymentUtil {
                 .findAny();
     }
 
-    private AliveDetector waitServerStarted() {
-        AliveDetector detector = new AliveDetector(podUtil);
+    private AliveDetector waitServerStarted(boolean verbose) {
+        AliveDetector detector = new AliveDetector(podUtil, verbose);
 
         // Do checks asynchronous.
         new Thread(detector).start();
@@ -93,8 +97,14 @@ public class DeploymentUtil {
             NonNamespaceOperation<Deployment, DeploymentList, RollableScalableResource<Deployment>> deployments = client.apps().deployments().inNamespace(namespace);
             deployments.delete(deployment.get());
 
-            //LogHelper.log("Removed Domain Deployment " + deployment.get());  // With all info from K8S
-            LogHelper.log("Removed Domain K8S Deployment ");
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("Removed K8S Deployment for '%s' Domain", payaraDomainResource.getMetadata().getName()));
+            }
+
+        } else {
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("K8S Deployment for '%s' Domain not found", payaraDomainResource.getMetadata().getName()));
+            }
 
         }
     }
@@ -122,11 +132,15 @@ public class DeploymentUtil {
 
 
             deployments.create(newDeployment);
-            // LogHelper.log("Created new Deployment " + newDeployment);
-            LogHelper.log("Created new K8S Deployment for Node");
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("Created new K8S Deployment for '%s' Nodes", payaraDomainResource.getMetadata().getName()));
+            }
+
             inputStream.close();
         } else {
-            LogHelper.log("Deployment already available");
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("K8S Deployment for '%s' Nodes already exists", payaraDomainResource.getMetadata().getName()));
+            }
         }
     }
 
@@ -141,11 +155,14 @@ public class DeploymentUtil {
             NonNamespaceOperation<Deployment, DeploymentList, RollableScalableResource<Deployment>> deployments = client.apps().deployments().inNamespace(namespace);
             deployments.delete(deployment.get());
 
-            // LogHelper.log("Removed Deployment Node" + deployment.get());  // With all info from K8S
-            LogHelper.log("Removed Node K8S Deployment ");
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("Removed K8S Deployment for '%s' Nodes", payaraDomainResource.getMetadata().getName()));
+            }
 
         } else {
-            LogHelper.log("No deployment found for ");
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("No K8S Deployment for '%s' Nodes found", payaraDomainResource.getMetadata().getName()));
+            }
         }
     }
 
@@ -168,11 +185,16 @@ public class DeploymentUtil {
 
             // Apply the Service to K8S.
             services.create(newService);
-            //LogHelper.log("Created new Service " + newService);   // With all info from K8S
-            LogHelper.log("Created new K8S Node Service ");
+
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("Created K8S Service for '%s' Nodes", payaraDomainResource.getMetadata().getName()));
+            }
+
             inputStream.close();
         } else {
-            LogHelper.log("Service already available");
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("K8S Service for '%s' Nodes already available", payaraDomainResource.getMetadata().getName()));
+            }
         }
     }
 
@@ -209,8 +231,14 @@ public class DeploymentUtil {
             NonNamespaceOperation<Service, ServiceList, ServiceResource<Service>> services = client.services().inNamespace(namespace);
             services.delete(service.get());
 
-            //LogHelper.log("Removed Service " + service.get());  // With all info from K8S
-            LogHelper.log("Removed K8S Node Service ");
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("Removed K8S Service for '%s' Nodes", payaraDomainResource.getMetadata().getName()));
+            }
+
+        } else {
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("K8S Service for '%s' Nodes not found", payaraDomainResource.getMetadata().getName()));
+            }
 
         }
     }
@@ -240,7 +268,14 @@ public class DeploymentUtil {
                 scalers.create(newScaler);
                 inputStream.close();
 
-                LogHelper.log("Added Horizontal Scaler to Node Deployment");
+                if (payaraDomainResource.getSpec().isVerbose()) {
+                    LogHelper.log(String.format("Created K8S Horizontal Scaler for '%s' Nodes", payaraDomainResource.getMetadata().getName()));
+                }
+            } else {
+                if (payaraDomainResource.getSpec().isVerbose()) {
+                    LogHelper.log(String.format("K8S Horizontal Scaler for '%s' Nodes already exists", payaraDomainResource.getMetadata().getName()));
+                }
+
             }
         }
     }
@@ -277,7 +312,14 @@ public class DeploymentUtil {
             MixedOperation<HorizontalPodAutoscaler, HorizontalPodAutoscalerList, Resource<HorizontalPodAutoscaler>> scalers = client.autoscaling().v1().horizontalPodAutoscalers();
             scalers.delete(autoscaler.get());
 
-            LogHelper.log("Removed K8S Node Horizontal Scaler ");
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("Removed K8S Horizontal Scaler for '%s' Nodes", payaraDomainResource.getMetadata().getName()));
+            }
+
+        } else {
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("K8S Horizontal Scaler for '%s' Nodes not found", payaraDomainResource.getMetadata().getName()));
+            }
 
         }
     }

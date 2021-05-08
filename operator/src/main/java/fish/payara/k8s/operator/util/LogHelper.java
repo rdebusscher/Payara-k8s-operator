@@ -8,8 +8,8 @@ public class LogHelper {
 
     private static Logger logger = LoggerFactory.getLogger(PayaraOperator.class);
 
-    public static void log(String action, Object obj) {
-        logger.info("{}: {}", action, obj);
+    public static void exception(Throwable error) {
+        logger.error("{}: {}", error.getMessage(), error);
     }
 
     public static void log(String action) {

@@ -88,7 +88,7 @@ public class PayaraOperator {
                                 return;
                             }
                         }
-                        LogHelper.log("received " + action + " for resource " + resource);
+                        logActionEvent(action, resource);
                         if (action == Action.ADDED || action == Action.MODIFIED) {
                             cache.put(uid, resource);
                         }
@@ -99,20 +99,27 @@ public class PayaraOperator {
                             cache.remove(uid);
                         }
                     } catch (Exception e) {
-                        e.printStackTrace(); // FIXME
+                        LogHelper.exception(e);
                         System.exit(-1);
                     }
                 }
 
                 @Override
                 public void onClose(WatcherException cause) {
-                    cause.printStackTrace();// FIXME
+                    LogHelper.exception(cause);
                     System.exit(-1);
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();// FIXME
+            LogHelper.exception(e);
             System.exit(-1);
+        }
+    }
+
+    private void logActionEvent(Watcher.Action action, PayaraDomainResource resource) {
+        LogHelper.log(String.format("Received event '%s' for Payara Domain '%s'", action, resource.getMetadata().getName()));
+        if (resource.getSpec().isVerbose()) {
+            LogHelper.log(String.format("Received event '%s' for Resource %s", action, resource));
         }
     }
 }
