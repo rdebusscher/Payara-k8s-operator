@@ -53,7 +53,7 @@ public class DeploymentUtil {
 
             inputStream.close();
             // Return a AliveDetector so tat we can wait until DAS is up and running.
-            return waitServerStarted(payaraDomainResource.getSpec().isVerbose());
+            return waitServerStarted(payaraDomainResource.getMetadata().getName(), payaraDomainResource.getSpec().isVerbose());
         } else {
             if (payaraDomainResource.getSpec().isVerbose()) {
                 LogHelper.log(String.format("K8S Deployment for '%s' Domain already exists", payaraDomainResource.getMetadata().getName()));
@@ -78,8 +78,8 @@ public class DeploymentUtil {
                 .findAny();
     }
 
-    private AliveDetector waitServerStarted(boolean verbose) {
-        AliveDetector detector = new AliveDetector(podUtil, verbose);
+    private AliveDetector waitServerStarted(String name, boolean verbose) {
+        AliveDetector detector = new AliveDetector(podUtil, name, verbose);
 
         // Do checks asynchronous.
         new Thread(detector).start();

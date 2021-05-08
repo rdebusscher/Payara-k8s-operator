@@ -22,7 +22,7 @@ public class PodUtil {
     }
 
     /**
-     * Lookup a pod based on his lobel (= the same name shown by `kubectl get pods`)
+     * Lookup a pod based on his label.
      * @param podLabel
      * @return
      */
@@ -36,8 +36,7 @@ public class PodUtil {
         if (pod.isPresent()) {
             result = pod.get();
         } else {
-            // FIXME
-            System.out.println("Not found");
+            LogHelper.log(String.format("Pod with app label '%s' not found", podLabel));
         }
 
         return result;

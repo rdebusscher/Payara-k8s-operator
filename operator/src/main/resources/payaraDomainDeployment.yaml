@@ -13,11 +13,11 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: domain
+      app: domain-[# th:text="${name}"/]
   template:
     metadata:
       labels:
-        app: domain
+        app: domain-[# th:text="${name}"/]
     spec:
       containers:
         - name: domain

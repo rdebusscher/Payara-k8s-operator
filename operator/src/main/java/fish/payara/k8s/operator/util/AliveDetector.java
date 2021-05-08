@@ -12,13 +12,15 @@ public class AliveDetector implements Runnable {
     private final CountDownLatch upSignal = new CountDownLatch(1);
 
     private final PodUtil podUtil;
-    private boolean verbose;
+    private final String name;
+    private final boolean verbose;
     private Pod pod;
 
     boolean upAndRunning = false;
 
-    public AliveDetector(PodUtil podUtil, boolean verbose) {
+    public AliveDetector(PodUtil podUtil, String name, boolean verbose) {
         this.podUtil = podUtil;
+        this.name = name;
         this.verbose = verbose;
     }
 
@@ -26,6 +28,10 @@ public class AliveDetector implements Runnable {
     public void run() {
         // First we have to make sure the pod has an IP, so get the IP (or wait until we have one)
         String ip = waitForIP();
+        if (ip == null) { // if we can't find the pod or can't determine the IP Address
+            // Stop this thread
+            upAndRunning = true;
+        }
         if (verbose) {
             LogHelper.log("Wait until domain is up at " + ip);
         }
@@ -47,6 +53,7 @@ public class AliveDetector implements Runnable {
 
     private String waitForIP() {
         boolean ready = false;
+        String podLabel = "domain-" + name;
         while (!ready) {
             try {
                 Thread.sleep(500);
@@ -54,8 +61,10 @@ public class AliveDetector implements Runnable {
                 e.printStackTrace();
             }
             // We always need to get the latest info about the POD as otherwise we would not see te status change.
-            this.pod = podUtil.lookupPod("domain"); // FIXME
-
+            this.pod = podUtil.lookupPod(podLabel);
+            if (this.pod == null) {
+                return null;
+            }
             if (!pod.getStatus().getContainerStatuses().isEmpty()) {
                 ready = pod.getStatus().getContainerStatuses().get(0).getReady();  // Checks only 1 container in the pod! Ok for now.
             }
@@ -69,6 +78,7 @@ public class AliveDetector implements Runnable {
 
     /**
      * Call Host and IP to see if we get a connection. If so, the DAS is up and running.
+     *
      * @param host
      * @param port
      * @param timeoutMilliseconds
