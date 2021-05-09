@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: payara-domain-[# th:text="${name}"/]
   labels:
-    app: domain
+    app: domain-[# th:text="${name}"/]
   ownerReferences:
     - apiVersion: poc.payara.fish/v1alpha
       kind: Domain

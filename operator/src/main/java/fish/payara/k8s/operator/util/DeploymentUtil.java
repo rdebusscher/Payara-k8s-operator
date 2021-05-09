@@ -94,7 +94,7 @@ public class DeploymentUtil {
                 .list()
                 .getItems()
                 .stream()
-                .filter(d -> d.getMetadata().getLabels().get("app").equals(type.getAppLabel()))
+                .filter(d -> d.getMetadata().getLabels().get("app").equals(type.getAppLabel()+"-"+payaraDomainResource.getMetadata().getName()))
                 .filter(d -> d.getMetadata().getOwnerReferences().stream()
                         .anyMatch(ownerReference -> ownerReference.getUid().equals(payaraDomainResource.getMetadata().getUid())))
                 .findAny();
