@@ -17,3 +17,10 @@ spec:
       containers:
         - name: operator
           image: payara-operator:0.5
+          resources:
+            limits:
+              cpu: 1000m
+              memory: 256Mi
+            requests:
+              cpu: 1000m
+              memory: 256Mi
