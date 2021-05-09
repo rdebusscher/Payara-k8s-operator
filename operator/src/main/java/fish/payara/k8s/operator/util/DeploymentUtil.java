@@ -5,6 +5,7 @@ import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.api.model.Service;
 import io.fabric8.kubernetes.api.model.ServiceList;
 import io.fabric8.kubernetes.api.model.apps.Deployment;
+import io.fabric8.kubernetes.api.model.apps.DeploymentBuilder;
 import io.fabric8.kubernetes.api.model.apps.DeploymentList;
 import io.fabric8.kubernetes.api.model.autoscaling.v1.HorizontalPodAutoscaler;
 import io.fabric8.kubernetes.api.model.autoscaling.v1.HorizontalPodAutoscalerList;
@@ -62,6 +63,27 @@ public class DeploymentUtil {
         return null;
     }
 
+    public void updateDeploymentDomain(PayaraDomainResource payaraDomainResource) throws IOException {
+        Optional<Deployment> deployment = findDeployment(payaraDomainResource, ResourceType.INSTANCE);
+
+        if (deployment.isPresent()) {
+            Deployment deploymentDAS = deployment.get();
+
+            NonNamespaceOperation<Deployment, DeploymentList, RollableScalableResource<Deployment>> deployments = client.apps().deployments().inNamespace(namespace);
+
+            deployments.withName(deploymentDAS.getMetadata().getName())
+                    .edit(d -> new DeploymentBuilder(deploymentDAS)
+                            .editSpec().withNewReplicas(payaraDomainResource.getSpec().getInstances())
+                            .endSpec().build());
+
+
+        } else {
+            if (payaraDomainResource.getSpec().isVerbose()) {
+                LogHelper.log(String.format("K8S Deployment for '%s' Domain does not exists", payaraDomainResource.getMetadata().getName()));
+            }
+        }
+    }
+
     private boolean noDeploymentYet(PayaraDomainResource payaraDomainResource, ResourceType type) {
         return !findDeployment(payaraDomainResource, type).isPresent();
     }
@@ -111,6 +133,7 @@ public class DeploymentUtil {
 
     /**
      * Add a K8S Deployment for the Instances.
+     *
      * @param payaraDomainResource
      * @param podDAS
      * @throws IOException
@@ -245,6 +268,7 @@ public class DeploymentUtil {
 
     /**
      * Add a Horizontal Pod Scaler to to domain to control the Payara instances.
+     *
      * @param payaraDomainResource
      * @throws IOException
      */
@@ -304,6 +328,7 @@ public class DeploymentUtil {
 
     /**
      * Remove the Horizontal Pod Scaler that is created for the Payara Domain Resource.
+     *
      * @param payaraDomainResource
      */
     public void removeAutoscale(PayaraDomainResource payaraDomainResource) {

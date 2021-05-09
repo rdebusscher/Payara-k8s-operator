@@ -84,8 +84,12 @@ public class ResourceEventProcessor implements Runnable {
             deploymentUtil.removeDeploymentDomain(payaraDomainResource);
         }
         if (action == Watcher.Action.MODIFIED) {
-            LogHelper.log("TODO: Modification not implemented yet");
 
+            try {
+                deploymentUtil.updateDeploymentDomain(payaraDomainResource);
+            } catch (Exception e) {
+                LogHelper.exception(e);
+            }
         }
         logEndEvent(action, payaraDomainResource);
     }
