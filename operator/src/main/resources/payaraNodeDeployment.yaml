@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: payara-node-[# th:text="${name}"/]
   labels:
-    app: node
+    app: node-[# th:text="${name}"/]
   ownerReferences:
     - apiVersion: poc.payara.fish/v1alpha
       kind: Domain
@@ -13,11 +13,11 @@ spec:
   replicas: [# th:text="${instances}"/]
   selector:
     matchLabels:
-      app: node
+      app: node-[# th:text="${name}"/]
   template:
     metadata:
       labels:
-        app: node
+        app: node-[# th:text="${name}"/]
     spec:
       containers:
         - name: node

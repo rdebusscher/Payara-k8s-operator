@@ -14,4 +14,4 @@ spec:
   ports:
     - port: 28080
   selector:
-    app: node
+    app: node-[# th:text="${name}"/]
