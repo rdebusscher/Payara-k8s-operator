@@ -10,10 +10,8 @@ metadata:
       name: placeholder
       uid: placeholder
 spec:
-  type: NodePort
+  type: LoadBalancer
   ports:
     - port: 28080
-      nodePort: 30808
-      targetPort: 28080
   selector:
     app: node

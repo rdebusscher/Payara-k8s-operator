@@ -85,7 +85,7 @@ And open the Payara Web Administration console at `http://localhost:4848` (you c
 
 The test is a simple application that returns the host and a counter value from the Data Grid. The return value should indicate that both instances on Payara in the deployment Group are accessed (Note: Local kubernetes doesn't perform round-robin, so multiple calls might be required) and the counter is incremented each time. 
 
-    curl localhost:30808/testapp/counter
+    curl localhost:28080/testapp/counter
 
 10\.  Cleanup
 
