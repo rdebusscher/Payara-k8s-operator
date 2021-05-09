@@ -22,11 +22,12 @@ public class PodUtil {
     }
 
     /**
-     * Lookup a pod based on his label.
-     * @param podLabel
+     * Lookup a pod running the DAS based on the Payara Domain name.
+     * @param name
      * @return
      */
-    public Pod lookupPod(String podLabel) {
+    public Pod lookupPod(String name) {
+        String podLabel = "domain-" + name;
         Pod result = null;
         Optional<Pod> pod = client.pods().inNamespace(namespace).list().getItems()
                 .stream()
@@ -96,4 +97,11 @@ public class PodUtil {
         return commandOutput;
     }
 
+    public KubernetesClient getClient() {
+        return client;
+    }
+
+    public String getNamespace() {
+        return namespace;
+    }
 }

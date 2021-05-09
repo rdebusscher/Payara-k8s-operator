@@ -1,10 +1,7 @@
 package fish.payara.k8s.operator;
 
 import fish.payara.k8s.operator.resource.PayaraDomainResource;
-import fish.payara.k8s.operator.util.AliveDetector;
-import fish.payara.k8s.operator.util.DeploymentUtil;
-import fish.payara.k8s.operator.util.LogHelper;
-import fish.payara.k8s.operator.util.PayaraUtil;
+import fish.payara.k8s.operator.util.*;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.KubernetesClient;
 import io.fabric8.kubernetes.client.Watcher;
@@ -16,6 +13,7 @@ public class ResourceEventProcessor implements Runnable {
     private final String namespace;
     private final BlockingDeque<EventItem> transferQueue;
 
+    private PodUtil podUtil;
     private DeploymentUtil deploymentUtil;
     private PayaraUtil payaraUtil;
 
@@ -28,8 +26,9 @@ public class ResourceEventProcessor implements Runnable {
     }
 
     private void initUtils() {
-        deploymentUtil = new DeploymentUtil(client, namespace);
-        payaraUtil = new PayaraUtil(client, namespace);
+        podUtil = new PodUtil(client, namespace);
+        deploymentUtil = new DeploymentUtil(podUtil);
+        payaraUtil = new PayaraUtil(podUtil);
     }
 
     @Override
@@ -54,24 +53,24 @@ public class ResourceEventProcessor implements Runnable {
             // New Yaml file, Add DAS and a number of Instances and join them in a Deployment Group.
             try {
                 AliveDetector domainDetector = deploymentUtil.addNewDeploymentDomain(payaraDomainResource);
-                if (domainDetector == null) {
-                    // Domain already running
-                    return;
-                }
-                domainDetector.waitUntilReady();  // Waits until the domain is up.
-                if (domainDetector.isUpAndRunning()) {
-                    Pod podDAS = domainDetector.getPod();
-                    payaraUtil.prepareDomain(podDAS, payaraDomainResource);
-                    if (payaraDomainResource.getSpec().getConfigScript() != null && !payaraDomainResource.getSpec().getConfigScript().isEmpty()) {
-                        payaraUtil.executeConfigScript(podDAS, payaraDomainResource);
+                if (domainDetector != null) {
+                    Pod podDAS = null;
+                    domainDetector.waitUntilReady();  // Waits until the domain is up.
+                    if (domainDetector.isUpAndRunning()) {
+                        podDAS = podUtil.lookupPod(payaraDomainResource.getMetadata().getName());
+                        payaraUtil.prepareDomain(podDAS, payaraDomainResource);
+                        if (payaraDomainResource.getSpec().getConfigScript() != null && !payaraDomainResource.getSpec().getConfigScript().isEmpty()) {
+                            payaraUtil.executeConfigScript(podDAS, payaraDomainResource);
+                        }
                     }
+
                     if (payaraUtil.deployApplication(podDAS, payaraDomainResource)) {
                         // Deploy instances.
                         deploymentUtil.addNewDeploymentNode(payaraDomainResource, podDAS);
                         deploymentUtil.addNewServiceNode(payaraDomainResource);
                         deploymentUtil.addAutoscale(payaraDomainResource);
                     }
-                }
+                } //domainDetector==null means domain was already up and running and nothing needs to be done.
             } catch (Exception e) {
                 LogHelper.exception(e);
             }

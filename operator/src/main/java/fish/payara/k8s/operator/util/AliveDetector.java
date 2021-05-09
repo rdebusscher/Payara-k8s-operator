@@ -14,7 +14,6 @@ public class AliveDetector implements Runnable {
     private final PodUtil podUtil;
     private final String name;
     private final boolean verbose;
-    private Pod pod;
 
     boolean upAndRunning = false;
 
@@ -53,7 +52,7 @@ public class AliveDetector implements Runnable {
 
     private String waitForIP() {
         boolean ready = false;
-        String podLabel = "domain-" + name;
+        Pod pod = null;
         while (!ready) {
             try {
                 Thread.sleep(500);
@@ -61,8 +60,9 @@ public class AliveDetector implements Runnable {
                 e.printStackTrace();
             }
             // We always need to get the latest info about the POD as otherwise we would not see te status change.
-            this.pod = podUtil.lookupPod(podLabel);
-            if (this.pod == null) {
+            pod = podUtil.lookupPod(name);
+            if (pod == null) {
+                // TODO Check when this can happen and the consequences.
                 return null;
             }
             if (!pod.getStatus().getContainerStatuses().isEmpty()) {
@@ -102,7 +102,4 @@ public class AliveDetector implements Runnable {
         return upAndRunning;
     }
 
-    public Pod getPod() {
-        return pod;
-    }
 }

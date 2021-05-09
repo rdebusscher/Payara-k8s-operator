@@ -22,10 +22,10 @@ public class DeploymentUtil {
     private final String namespace;
     private final PodUtil podUtil;
 
-    public DeploymentUtil(KubernetesClient client, String namespace) {
-        this.client = client;
-        this.namespace = namespace;
-        podUtil = new PodUtil(client, namespace);
+    public DeploymentUtil(PodUtil podUtil) {
+        this.podUtil = podUtil;
+        this.client = podUtil.getClient();
+        this.namespace = podUtil.getNamespace();
     }
 
     public AliveDetector addNewDeploymentDomain(PayaraDomainResource payaraDomainResource) throws IOException {

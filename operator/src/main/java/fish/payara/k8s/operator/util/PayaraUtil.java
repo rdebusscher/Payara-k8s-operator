@@ -2,7 +2,6 @@ package fish.payara.k8s.operator.util;
 
 import fish.payara.k8s.operator.resource.PayaraDomainResource;
 import io.fabric8.kubernetes.api.model.Pod;
-import io.fabric8.kubernetes.client.KubernetesClient;
 
 import java.util.Arrays;
 import java.util.regex.Matcher;
@@ -22,8 +21,8 @@ public class PayaraUtil {
 
     private final PodUtil podUtil;
 
-    public PayaraUtil(KubernetesClient client, String namespace) {
-        podUtil = new PodUtil(client, namespace);
+    public PayaraUtil(PodUtil podUtil) {
+        this.podUtil = podUtil;
     }
 
     public void prepareDomain(Pod pod, PayaraDomainResource payaraDomainResource) {
