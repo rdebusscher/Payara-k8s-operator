@@ -30,6 +30,7 @@ spec:
                 instances:
                   type: integer
                   minimum: 2
+                  default: 2
                 config-script:
                   type: string
                 cpu:
