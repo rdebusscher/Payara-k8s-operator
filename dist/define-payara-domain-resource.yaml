@@ -1,0 +1,71 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: domains.poc.payara.fish
+spec:
+  group: poc.payara.fish
+  names:
+    kind: Domain
+    listKind: DomainList
+    plural: domains
+    singular: domain
+  scope: Namespaced
+  versions:
+    - name : v1alpha
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                application-image:
+                  type: string
+                instance-image:
+                  type: string
+                application:
+                  type: string
+                instances:
+                  type: integer
+                  minimum: 2
+                  default: 2
+                config-script:
+                  type: string
+                cpu:
+                  type: integer
+                  minimum: 500
+                  default: 2000
+                memory:
+                  type: integer
+                  minimum: 512
+                  default: 512
+                max-instances:
+                  type: integer
+                  minimum: 2
+                  default: 2
+                cpu-target:
+                  type: integer
+                  minimum: 30
+                  maximum: 90
+                  default: 80
+                verbose:
+                  type: boolean
+                  default: false
+      additionalPrinterColumns:
+        - name: applicationImage
+          type: string
+          description: The application image for the Payara Domain containing the application
+          jsonPath: .spec.application-image
+        - name: instanceImage
+          type: string
+          description: The instance image for the Deployment Group Instances
+          jsonPath: .spec.instance-image
+        - name: Instances
+          type: integer
+          description: The number of Instances in the Deployment group Cluster
+          jsonPath: .spec.instances
+        - name: Age
+          type: date
+          jsonPath: .metadata.creationTimestamp

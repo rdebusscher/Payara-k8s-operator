@@ -12,3 +12,8 @@ Directory `demo` contains a test application that will be used in the operator e
 ----
     mvn clean package
 ----
+
+
+## Installation
+
+The required files for installing the Payara Kubernetes Operator are located in the _/dist_ folder of the repository. Have a look at the file _dist/readme.md_ for the installation procedure and the user guide.
