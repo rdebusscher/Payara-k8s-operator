@@ -21,7 +21,7 @@ import java.util.List;
 public class StressTest {
 
     private static List<TargetCaller> users = new ArrayList<>();
-    private static final String target = "http://localhost:30808/testapp/prime";
+    private static final String target = "http://localhost:28080/testapp/prime";
 
     public static void main(String[] args) {
         scaleThreads(5);
