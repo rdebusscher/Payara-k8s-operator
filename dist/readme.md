@@ -9,7 +9,7 @@ The installation is performed using the `kubectl` tool and can be done from the 
 
 Installs the Custom Resource Document that defines the Payara Kubernetes document.  Install this in the same _Namespace_ you want to use the Payara Kubernetes Operator.
 
-Next, prepare the Payara Kubernetes Operator. From within the operator directory, create the JAR file
+Next, prepare the Payara Kubernetes Operator. You can do this either from the code in the _operator_ directory, or use the image we have made available on Docker Hub.  If you want to build the operator yourself, launch the following command in the _operator_ directory. 
 
     mvn clean package
 
@@ -20,6 +20,10 @@ And copy the resulting `payara-operator.jar` to the _dist_ directory. You can no
 Builds the Docker Image containing the Payara operator. The Operator can be installed using the command
 
     kubectl apply -f payara-operator.yaml
+
+If you want to use the pre-build docker image, change the image property in the _payara-operator.yaml_ as follows.
+
+          image: payara/payara-operator:latest
 
 ## Prepare
 
@@ -56,6 +60,10 @@ The Payara Operator CRD instructs the Operator to create the Payara environment 
       memory: 512
       config-script: /opt/payara/k8s/test-script
       verbose: false
+
+You can 'submit' this configuration to the Payara Kubernetes Operator by using the command
+
+     kubectl apply -f <yourfile>.yaml
 
 Here is the explanation of the properties
 
